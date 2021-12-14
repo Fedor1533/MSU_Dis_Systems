@@ -23,7 +23,7 @@ std::string Text(int i, int length = 10)
 
 int main(int argc, char* argv[])
 {
-
+    // current working path	
     const fs::path workdir = fs::current_path();
 
     int rank, num_tasks;
