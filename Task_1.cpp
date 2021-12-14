@@ -24,8 +24,7 @@ std::string Text(int i, int length = 10)
 int main(int argc, char* argv[])
 {
 
-	// Current working path - "C:\\Users\\fedor\\Desktop\\HelloMPI\\Debug"
-	const fs::path workdir = fs::current_path();
+    const fs::path workdir = fs::current_path();
 
     int rank, num_tasks;
     // Read quorum and right quorum for voting
@@ -67,7 +66,6 @@ int main(int argc, char* argv[])
             {
                 MPI_Recv(process_version.data(), 2, MPI_INT, j, 2, MPI_COMM_WORLD, &status);
                 processes_versions[j - 1] = process_version;
-                // printf("Received file version: %d from process: %d\n", processes_versions[j - 1][1], processes_versions[j - 1][0]);
                 time += Ts;
                 time += Tb * 8;
             }
@@ -146,7 +144,6 @@ int main(int argc, char* argv[])
                 time += Ts;
                 time += Tb * 8;
                 processes_versions[j - 1] = process_version;
-                // printf("Received version: %d from process: %d\n", processes_versions[j - 1][1], processes_versions[j - 1][0]);
             }
 
             // Find max version of file
@@ -163,14 +160,12 @@ int main(int argc, char* argv[])
             printf("Read version: %d from process: %d\n", max_version, process_id);
             fs::path full_path = workdir / "file_sys";
             fs::path file_path = full_path / ("test" + std::to_string(process_id)) / ("version" + std::to_string(max_version) + ".txt");
-            // std::cout << "Read from file:" << file_path << std::endl;
             std::fstream file(file_path);
 
             int length = fs::file_size(file_path);
             // std::cout << "length:" << length << std::endl;
             char* buffer = new char[length+1];
             buffer[length] = 0;
-            // read data as a block:
             file.read(buffer, length);
             std::cout << "Read from file: " << buffer << std::endl;
             file.close();
@@ -191,7 +186,7 @@ int main(int argc, char* argv[])
         int actual_version = 0;
         std::string server_dir = "test" + std::to_string(rank);
 
-        // creating "server directory" if not exist
+        // creating "server directory"
         if (!fs::is_directory(workdir / "file_sys" / server_dir) || !fs::exists(workdir / "file_sys" / server_dir))
         { 
             std::cout << "Create: " << "/file_sys/" + server_dir << std::endl;
@@ -218,7 +213,6 @@ int main(int argc, char* argv[])
                 MPI_Send(process_version.data(), 2, MPI_INT, 0, 2, MPI_COMM_WORLD);
                 // Update request, receive actual file version
                 MPI_Recv(&actual_version, 1, MPI_INT, 0, 2, MPI_COMM_WORLD, &status);
-                // printf("Process %d, write req: receive actual Version = %d\n", rank, actual_version);
                 process_version[1] += 1;
                 // confirm that server changed it's file version
                 printf("Process %d, write req: send confirmation\n", rank);
