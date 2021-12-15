@@ -56,10 +56,10 @@ int main(int argc, char* argv[])
             std::vector<std::vector<int>> processes_versions; // to collect N_w processes's id and it's versions
             processes_versions.resize(N_w);
             // Send write requests to Nw processes
-            time += Ts;
             for (int j = 1; j <= N_w; ++j)
             {
                 MPI_Send(&write, 1, MPI_INT, j, 0, MPI_COMM_WORLD);
+                time += Ts;
                 time += Tb * 4;
             }
 
@@ -68,10 +68,10 @@ int main(int argc, char* argv[])
             // std::cout << "Text: " << text;
 
             //Send text to all N_w processes
-            time += Ts;
             for (int p = 1; p <= N_w; ++p)
             {
                 MPI_Send(text.c_str(), N + 1, MPI_CHAR, p, 2, MPI_COMM_WORLD);
+                time += Ts;
                 time += Tb * N;
             }
 
@@ -99,10 +99,10 @@ int main(int argc, char* argv[])
             std::vector<std::vector<int>> processes_versions;
             processes_versions.resize(N_r);
             // Send read requests to Nr processes
-            time += Ts;
             for (int j = 1; j <= N_r; ++j)
             {
                 MPI_Send(&read, 1, MPI_INT, j, 0, MPI_COMM_WORLD);
+                time += Ts;
                 time += Tb * 4;
             }
 
