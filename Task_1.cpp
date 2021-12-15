@@ -51,12 +51,10 @@ int main(int argc, char* argv[])
         std::vector<int> process_version = { rank, 0 };
 
         // Try 3 write operations
-        printf("Process %d - Start writing\n", rank);
         for (int i = 0; i < 3; ++i)
         {
             std::vector<std::vector<int>> processes_versions; // to collect N_w processes's id and it's versions
             processes_versions.resize(N_w);
-            printf("\nWrite request, op number: %d", i);
             // Send write requests to Nw processes
             time += Ts;
             for (int j = 1; j <= N_w; ++j)
@@ -67,7 +65,7 @@ int main(int argc, char* argv[])
 
             // Create text to write
             auto text = Text(i, N);
-            std::cout << "Text: " << text;
+            // std::cout << "Text: " << text;
 
             //Send text to all N_w processes
             time += Ts;
@@ -91,18 +89,16 @@ int main(int argc, char* argv[])
                 time += Ts;
                 time += Tb * 4;
             }
-            printf("Confirmed version %d\n", version);
+            // printf("Confirmed version %d\n", version);
         }
 
         // Try 10 read operations
-        printf("\nProcess %d - Start reading\n", rank);
         for (int i = 0; i < 10; ++i)
         {
             process_version = { rank, 0 };
             std::vector<std::vector<int>> processes_versions;
             processes_versions.resize(N_r);
             // Send read requests to Nr processes
-            printf("Read request, operation number: %d\n", i);
             time += Ts;
             for (int j = 1; j <= N_r; ++j)
             {
@@ -117,7 +113,6 @@ int main(int argc, char* argv[])
                 time += Ts;
                 time += Tb * 8;
                 processes_versions[j - 1] = process_version;
-                // printf("Received version: %d from process: %d\n", processes_versions[j - 1][1], processes_versions[j - 1][0]);
             }
 
             // Find max version of file
@@ -138,7 +133,6 @@ int main(int argc, char* argv[])
             std::fstream file(file_path);
 
             int length = fs::file_size(file_path);
-            // std::cout << "length:" << length << std::endl;
             char* buffer = new char[length + 1];
             buffer[length] = 0;
             // read data as a block:
@@ -182,14 +176,12 @@ int main(int argc, char* argv[])
             if (req_type == 1)
             {
                 // Read request
-                printf("Process %d, read req: send Version = %d process = %d\n", rank, process_version[1], process_version[0]);
                 MPI_Send(process_version.data(), 2, MPI_INT, 0, 1, MPI_COMM_WORLD);
                 req_type = 0;
             }
             else if (req_type == 2)
             {
                 // Write request
-                printf("Process %d, write req: current Version = %d process = %d\n", rank, process_version[1], process_version[0]);
                 // Receive text to write
                 char* buf = new char[N + 1];
                 MPI_Recv(buf, N + 1, MPI_CHAR, 0, 2, MPI_COMM_WORLD, &status);
@@ -206,7 +198,6 @@ int main(int argc, char* argv[])
 
                 process_version[1] += 1;
                 // confirm that server changed it's file version
-                printf("Process %d, write req: send confirmation\n", rank);
                 MPI_Send(&process_version[1], 1, MPI_INT, 0, 2, MPI_COMM_WORLD);
                 req_type = 0;
             }
