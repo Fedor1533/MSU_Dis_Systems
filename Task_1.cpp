@@ -25,7 +25,7 @@ std::string Text(int i, int length = 10)
 int main(int argc, char* argv[])
 {
 
-    // Current working path - "C:\\Users\\fedor\\Desktop\\HelloMPI\\Debug"
+    // Current working path
     const fs::path workdir = fs::current_path();
     // path to all directories
     fs::path full_path = workdir / "file_sys";
