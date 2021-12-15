@@ -168,8 +168,7 @@ int main(int argc, char* argv[])
             std::cout << "Copy " << "test_file.txt" << " to " << "file_sys/test/" + server_dir + "/version0.txt" << std::endl;
             fs::copy(workdir / "test_file.txt", workdir / "file_sys" / server_dir / "version0.txt");
         }
-
-        printf("Start process: %d\n", rank);
+        
         while (true)
         {
 
