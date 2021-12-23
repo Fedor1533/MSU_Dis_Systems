@@ -92,8 +92,7 @@ static void print_array(int nx, int ny, double ex[nx][ny], double ey[nx][ny], do
 // Save arrays versions to files
 static void save_checkpoint(int n_x, double ex[n_x][ny], double ey[n_x][ny], double hz[n_x][ny], char* file_xyz)
 {
-    printf("Proc %d - Checkpoint file: %s\n", myrank, file_xyz);
-
+    
     FILE* file = fopen(file_xyz, "w");
 
     // Write to ex
@@ -160,8 +159,6 @@ static void read_from_checkpoint(int n_x, double ex[n_x][ny], double ey[n_x][ny]
         }
     }
     fclose(file);
-
-    fprintf(stderr, "Read checkpoint for proc: %d succesed\n", myrank);
 }
 
 
@@ -181,7 +178,7 @@ static void err_handler(MPI_Comm* pcomm, int* perr, ...)
     MPI_Error_string(err, errstr, &len);
     printf("\nRank %d / %d: Notified of error %s. %d found dead\n", myrank, size, errstr, nf);
 
-    // создаем новый коммуникатор без вышедшего из строя процесса
+    // new communicator for working processes
     MPIX_Comm_shrink(work_comm, &work_comm);
     MPI_Comm_rank(work_comm, &myrank);
     // change filename for file_xyz
@@ -191,7 +188,6 @@ static void err_handler(MPI_Comm* pcomm, int* perr, ...)
 static void kernel_fdtd_2d(int tmax, int nx, int ny, int n_x, double ex[n_x][ny], double ey[n_x][ny], double hz[n_x][ny], int work_ranksize)
 {
     int t, i, j;
-    printf(" Kernel process %d rows = %d\n", myrank, n_x);
 
     double* ey_next = (double*)malloc(ny * sizeof(double));
     double* hz_prev = (double*)malloc(ny * sizeof(double));
@@ -406,8 +402,8 @@ int main(int argc, char** argv)
 
     if (nx % work_ranksize != 0)
     {
-        fprintf(stderr, "Кол-во строк массива должно нацело делиться на кол-во процессов, не считая одного резервного процесса.\n"
-            "Кол-во строк = %d, выбранное вами число процессов = %d.\n", nx, ranksize);
+        fprintf(stderr, "The number of rows in the array must be completely divisible by the chosen number of processes, not counting one reserve process.\n"
+            "Current number of rows = %d, chosen number of processes = %d.\n", nx, ranksize);
         MPI_Finalize();
         return 0;
     }
@@ -418,7 +414,7 @@ int main(int argc, char** argv)
     double(*hz)[nx][ny]; hz = (double(*)[nx][ny])malloc((nx) * (ny) * sizeof(double));
 
     int n_x = (nx / work_ranksize);
-    printf(" In process %d rows = %d\n", myrank, n_x);
+    // printf(" In process %d rows = %d\n", myrank, n_x);
     // arrays for local work
     double(*ex_local)[n_x][ny]; ex_local = (double(*)[n_x][ny])malloc(n_x * ny * sizeof(double));
     double(*ey_local)[n_x][ny]; ey_local = (double(*)[n_x][ny])malloc(n_x * ny * sizeof(double));
@@ -428,8 +424,8 @@ int main(int argc, char** argv)
     {
         // fill arrays
         init_array(tmax, nx, ny, *ex, *ey, *hz);
-        fprintf(stderr, "MAIN ARRAYS\n");
-        print_array(nx, ny, *ex, *ey, *hz);
+        // fprintf(stderr, "MAIN ARRAYS\n");
+        // print_array(nx, ny, *ex, *ey, *hz);
 
         start = MPI_Wtime();
 
@@ -452,7 +448,7 @@ int main(int argc, char** argv)
     // fill local arrays
     if (myrank < reserv_proc)
     {
-        printf(" Process %d size = %d \n", myrank, n_x * ny);
+        // printf(" Process %d size = %d \n", myrank, n_x * ny);
         MPI_Recv(ex_local, (n_x * ny), MPI_DOUBLE, 0, 1, work_comm, MPI_STATUS_IGNORE);
         MPI_Recv(ey_local, (n_x * ny), MPI_DOUBLE, 0, 2, work_comm, MPI_STATUS_IGNORE);
         MPI_Recv(hz_local, (n_x * ny), MPI_DOUBLE, 0, 3, work_comm, MPI_STATUS_IGNORE);
@@ -490,7 +486,7 @@ int main(int argc, char** argv)
     if (myrank < reserv_proc)
     {
         // send local arrays
-        printf(" Process %d size = %d \n", myrank, n_x * ny);
+        // printf(" Process %d size = %d \n", myrank, n_x * ny);
         MPI_Isend(ex_local, (n_x * ny), MPI_DOUBLE, 0, 1, work_comm, req);
         MPI_Isend(ey_local, (n_x * ny), MPI_DOUBLE, 0, 2, work_comm, req + 1);
         MPI_Isend(hz_local, (n_x * ny), MPI_DOUBLE, 0, 3, work_comm, req + 2);
