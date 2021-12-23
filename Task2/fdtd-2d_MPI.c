@@ -75,7 +75,6 @@ static void print_array(int nx, int ny, double ex[nx][ny], double ey[nx][ny], do
 static void kernel_fdtd_2d(int tmax, int nx, int ny, int n_x, double ex[n_x][ny], double ey[n_x][ny], double hz[n_x][ny], int myrank, int ranksize)
 {
   int t, i, j;
-  printf(" Kernel process %d rows = %d\n", myrank,  n_x);
   
   double *ey_next= (double *) malloc(ny * sizeof(double));
   double *hz_prev = (double *) malloc(ny * sizeof(double));
@@ -219,7 +218,7 @@ int main(int argc, char** argv)
   double (*hz)[nx][ny];
   
   int n_x = (nx / ranksize + (nx % ranksize > myrank));
-  printf(" In process %d rows = %d\n", myrank,  n_x);
+  // printf(" In process %d rows = %d\n", myrank,  n_x);
   double (*ex_local)[n_x][ny]; ex_local = (double(*)[n_x][ny])malloc(n_x * ny * sizeof(double));
   double (*ey_local)[n_x][ny]; ey_local = (double(*)[n_x][ny])malloc(n_x * ny * sizeof(double));
   double (*hz_local)[n_x][ny]; hz_local = (double(*)[n_x][ny])malloc(n_x * ny * sizeof(double));
@@ -233,8 +232,8 @@ int main(int argc, char** argv)
       
       // fill arrays
       init_array (tmax, nx, ny, *ex, *ey, *hz);
-      fprintf(stderr, "MAIN ARRAYS\n");
-      print_array(nx, ny, *ex, *ey, *hz);
+      // fprintf(stderr, "MAIN ARRAYS\n");
+      // print_array(nx, ny, *ex, *ey, *hz);
 	  
       start = MPI_Wtime();
 	  
@@ -256,7 +255,7 @@ int main(int argc, char** argv)
   }
   
   // fill local arrays
-  printf(" Process %d size = %d \n", myrank, n_x*ny);
+  // printf(" Process %d size = %d \n", myrank, n_x*ny);
   MPI_Recv(ex_local, (n_x * ny), MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   MPI_Recv(ey_local, (n_x * ny), MPI_DOUBLE, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   MPI_Recv(hz_local, (n_x * ny), MPI_DOUBLE, 0, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -286,7 +285,7 @@ int main(int argc, char** argv)
   }
   
   // send local arrays
-  printf(" Process %d size = %d \n", myrank, n_x*ny);
+  // printf(" Process %d size = %d \n", myrank, n_x*ny);
   MPI_Isend(ex_local, (n_x * ny), MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, req);
   MPI_Isend(ey_local, (n_x * ny), MPI_DOUBLE, 0, 2, MPI_COMM_WORLD, req+1);
   MPI_Isend(hz_local, (n_x * ny), MPI_DOUBLE, 0, 3, MPI_COMM_WORLD, req+2);
